@@ -5,6 +5,12 @@ Store), Android, and iOS.
 
 #### This script verifies the encryption/decryption key/IV, I will not be sharing it!
 
+The key and IV SHA-1 hashes:
+```
+Key = 5fae417442dc605aedfdca305d3cdbb4c21e658b
+IV = eaf6c9a66fdfc044dbed4cbc66efcd7c594864a6
+```
+
 Usage is as follows:
 ```
 usage: FOSE.py [-h] -i IN_FILE -o OUT_FILE [-l] [-j IN_JSON] [-d] [-nb]
