@@ -15,13 +15,14 @@ IV = eaf6c9a66fdfc044dbed4cbc66efcd7c594864a6
 
 Usage is as follows:
 ```
-usage: FOSE.py [-h] -i IN_FILE -o OUT_FILE [-l] [-j IN_JSON] [-d] [-nb]
+usage: FOSE.py [-h] [-i IN_FILE] [-o OUT_FILE] [-l] [-j IN_JSON] [-d] [-nb]
                [--lunchboxes LUNCHBOXES] [--handymen HANDYMEN]
                [--carriers CARRIERS] [--caps CAPS] [--quantum QUANTUM]
                [--food FOOD] [--energy ENERGY] [--water WATER]
                [--stim-packs STIM_PACKS] [--rad-aways RAD_AWAYS]
-               [--max-dwellers] [--remove-rocks] [--remove-lunchboxes]
-               [--remove-handymen] [--remove-carriers] [--remove-elevator]
+               [--dogmeats DOGMEATS] [--max-dwellers] [--rooms]
+               [--remove-rocks] [--remove-lunchboxes] [--remove-handymen]
+               [--remove-carriers] [--remove-elevator]
                [--vault-name VAULT_NAME] --save-key SAVE_KEY --save-iv SAVE_IV
 
 A script to edit Fallout Shelter saves on PC (Steam, Bethesda, and Windows
@@ -54,7 +55,9 @@ optional arguments:
                         The amount of stimpacks you want
   --rad-aways RAD_AWAYS
                         The amount of rad away's you want
+  --dogmeats DOGMEATS   The number of dogmeats you want in your inventory
   --max-dwellers        Max all dweller stats
+  --rooms               Unlock all rooms
   --remove-rocks        Remove all rocks
   --remove-lunchboxes   Removes all lunchboxes
   --remove-handymen     Removes all Mr. Handymen

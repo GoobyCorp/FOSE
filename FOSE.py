@@ -32,6 +32,9 @@ from os.path import isfile, isdir, join
 from Cryptodome.Cipher import AES
 from Cryptodome.Util.Padding import pad, unpad
 
+SAVE_KEY = b""
+SAVE_IV = b""
+
 SAVE_KEY_HASH = "5fae417442dc605aedfdca305d3cdbb4c21e658b"
 SAVE_IV_HASH = "eaf6c9a66fdfc044dbed4cbc66efcd7c594864a6"
 
@@ -42,8 +45,9 @@ class Item(IntEnum):
     HANDYMAN = 1
     CARRIER = 2
 
-    def __int__(self):
-        return self.value
+class CharacterType(IntEnum):
+    HANDYMAN = 2
+    PET = 3
 
 #looks like they implemented another way to generate a key, however, they don't use it :/
 def gen_passphrase(file_name: str) -> str:
@@ -122,9 +126,11 @@ if __name__ == "__main__":
     parser.add_argument("--water", type=int, help="The amount of water you want")
     parser.add_argument("--stim-packs", type=int, help="The amount of stimpacks you want")
     parser.add_argument("--rad-aways", type=int, help="The amount of rad away's you want")
+    parser.add_argument("--dogmeats", type=int, help="The number of dogmeats you want in your inventory")
 
     #booleans
     parser.add_argument("--max-dwellers", action="store_true", help="Max all dweller stats")
+    parser.add_argument("--rooms", action="store_true", help="Unlock all rooms")
     parser.add_argument("--remove-rocks", action="store_true", help="Remove all rocks")
     parser.add_argument("--remove-lunchboxes", action="store_true", help="Removes all lunchboxes")
     parser.add_argument("--remove-handymen", action="store_true", help="Removes all Mr. Handymen")
@@ -146,8 +152,6 @@ if __name__ == "__main__":
         assert args.save_iv is not None and len(args.save_iv) == 32 and sha1(unhexlify(args.save_iv)).hexdigest() == SAVE_IV_HASH, "Invalid save IV"  #16 bytes
 
         #load the key and IV
-        global SAVE_KEY
-        global SAVE_IV
         SAVE_KEY = unhexlify(args.save_key)
         SAVE_IV = unhexlify(args.save_iv)
 
@@ -224,14 +228,28 @@ if __name__ == "__main__":
                 if args.rad_aways and args.rad_aways > 0:
                     modded_json["vault"]["storage"]["resources"]["RadAway"] = args.rad_aways
                     print("Set vault rad away's to {}".format(args.rad_aways))
-                #remove rocks
-                if args.remove_rocks:
-                    rock_count = len(modded_json["vault"]["rocks"])
-                    if rock_count > 0:
-                        modded_json["vault"]["rocks"] = []
-                        print("Removed {} rock(s) from the vault".format(rock_count))
-                    else:
-                        print("No need to remove rocks, they're already gone")
+                #dogmeats
+                if args.dogmeats and args.dogmeats > 0:
+                    #remove all current dogmeats
+                    for x in range(0, len(modded_json["vault"]["inventory"]["items"])):
+                        single = modded_json["vault"]["inventory"]["items"][x]
+                        if "extraData" in single and "uniqueName" in single and single["extraData"]["uniqueName"] == "Dogmeat":
+                            del modded_json["vault"]["inventory"]["items"][x]
+                    #the dogmeat template
+                    dogmeat = {
+                        "id": "germanshepherd_l",
+                        "type": "Pet",
+                        "hasBeenAssigned": False,
+                        "hasRandonWeaponBeenAssigned": False,
+                        "extraData": {
+                            "uniqueName": "Dogmeat",
+                            "bonus": "ObjectiveMultiplier",
+                            "bonusValue": 3.0
+                        }
+                    }
+                    #add back to the amount requested
+                    for x in range(0, args.dogmeats):
+                        modded_json["vault"]["inventory"]["items"].append(dogmeat)
                 #max dweller level, happiness, armor, weapon, and stats
                 if args.max_dwellers:
                     dweller_count = len(modded_json["dwellers"]["dwellers"])
@@ -254,28 +272,50 @@ if __name__ == "__main__":
                             "hasBeenAssigned": False,
                             "hasRandonWeaponBeenAssigned": False
                         }
-                        #best pet
-                        modded_json["dwellers"]["dwellers"][x]["equippedPet"] = {
-                            "id": "germanshepherd_l",
-                            "type": "Pet",
-                            "hasBeenAssigned": False,
-                            "hasRandonWeaponBeenAssigned": False,
-                            "extraData": {
-                                "uniqueName": "Dogmeat",
-                                "bonus": "HappinessBoost",  #should be ObjectiveMultiplier @ 3.0
-                                "bonusValue": 100.0
-                            }
-                        }
                         #max stats
                         for y in range(0, 8):
                             modded_json["dwellers"]["dwellers"][x]["stats"]["stats"][y]["value"] = 10
                             modded_json["dwellers"]["dwellers"][x]["stats"]["stats"][y]["mod"] = 10
                             modded_json["dwellers"]["dwellers"][x]["stats"]["stats"][y]["exp"] = 600000
                     print("Maxed {} dweller(s)".format(dweller_count))
+                #unlock all rooms
+                if args.rooms:
+                    rooms = [
+                        "StorageUnlock",
+                        "MedbayUnlock",
+                        "SciencelabUnlock",
+                        "OverseerUnlock",
+                        "RadioStationUnlock",
+                        "WeaponFactoryUnlock",
+                        "GymUnlock",
+                        "DojoUnlock",
+                        "ArmoryUnlock",
+                        "ClassUnlock",
+                        "OutfitFactoryUnlock",
+                        "CardioUnlock",
+                        "BarUnlock",
+                        "GameRoomUnlock",
+                        "BarberShopUnlock",
+                        "PowerPlantUnlock",
+                        "WaterroomUnlock",
+                        "HydroponicUnlock",
+                        "NukacolaUnlock",
+                        "DesignFactoryUnlock"
+                    ]
+                    modded_json["unlockableMgr"]["claimed"] = rooms
+                #remove rocks
+                if args.remove_rocks:
+                    rock_count = len(modded_json["vault"]["rocks"])
+                    if rock_count > 0:
+                        modded_json["vault"]["rocks"] = []
+                        print("Removed {} rock(s) from the vault".format(rock_count))
+                    else:
+                        print("No need to remove rocks, they're already gone")
                 #remove all lunchboxes
                 if args.remove_lunchboxes:
                     lunchbox_count = modded_json["vault"]["LunchBoxesByType"].count(int(Item.LUNCHBOX))
                     if lunchbox_count > 0:
+                        modded_json["vault"]["LunchBoxesCount"] = 0
                         modded_json["vault"]["LunchBoxesByType"] = list(filter((int(Item.LUNCHBOX)).__ne__, modded_json["vault"]["LunchBoxesByType"]))
                         print("Removed {} lunchbox(es)".format(lunchbox_count))
                     else:
