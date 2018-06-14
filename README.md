@@ -1,7 +1,9 @@
 ### FOSE - Fallout Shelter Editor
 
 This is an editor for Fallout Shelter on PC (Steam, Bethesda, and Windows
-Store), Android, and iOS.
+Store), Android, iOS, and Nintendo Switch.
+
+To modify your save on the Nintendo Switch use [Checkpoint](https://github.com/BernardoGiordano/Checkpoint) save manager.
 
 #### This script verifies the encryption/decryption key/IV, I will not be sharing it!
 
